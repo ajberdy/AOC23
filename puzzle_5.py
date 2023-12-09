@@ -20,16 +20,11 @@ class Range:
 class Transform:
 
     def __init__(self, dest_start: int, source_start: int, range_len: int):
-        self.source_start = source_start
-        self.source_end = source_start + range_len
-        self.source_range = Range(self.source_start, self.source_end)
-        self.offset = dest_start - self.source_start
+        self.source_range = Range(source_start, source_start + range_len)
+        self.offset = dest_start - source_start
 
     def __str__(self):
-        return f"[{self.source_start}, {self.source_end}){self.offset:+}"
-
-    def __repr__(self):
-        return str(self)
+        return f"[{self.source_range.start}, {self.source_range.end}){self.offset:+}"
 
     def __call__(self, source_num: int | Range):
         if isinstance(source_num, Range):
@@ -65,7 +60,7 @@ class Puzzle5Solver(Solver):
         return [
             sorted(
                 [Transform(*row) for row in transformation],
-                key=lambda t: t.source_start,
+                key=lambda t: t.source_range.start,
             )
             for transformation in [
                 [
@@ -94,9 +89,9 @@ class Puzzle5Solver(Solver):
                     if seed.end in transform.source_range:
                         new_seed_end = seed.end
                     else:
-                        new_seed_end = transform.source_end
+                        new_seed_end = transform.source_range.end
                         # capture remaining seed range to be handled by other transforms
-                        if remaining_seed := Range(transform.source_end, seed.end):
+                        if remaining_seed := Range(transform.source_range.end, seed.end):
                             seeds.insert(0, remaining_seed)
                     new_seeds.append(transform(Range(new_seed_start, new_seed_end)))
                     break
