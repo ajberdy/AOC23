@@ -44,7 +44,6 @@ class Puzzle5Solver(Solver):
 
     def process_seeds(self, seed_str):
         if self.puzzle_part == 1:
-            # return {int(seed) for seed in re.findall(r"\d+", seed_str)}
             return [
                 Range(int(start), int(start) + 1)
                 for start in re.findall(r"\d+", seed_str)
