@@ -14,6 +14,6 @@ def run_solution(problem_number: int, part: int = 1):
 
 
 if __name__ == '__main__':
-    problem = (5, 2)
+    problem = (6, 2)
     answer = run_solution(*problem)
     print(f"Solution to Problem {problem[0]}.{problem[1]}: {answer}")

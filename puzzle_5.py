@@ -4,32 +4,19 @@ from functools import reduce
 from solver import Solver
 
 
-class Range:
-
-    def __init__(self, start, end):
-        self.start = start
-        self.end = end
-
-    def __repr__(self):
-        return f"Range({self.start}, {self.end})"
-
-    def __contains__(self, item):
-        return self.start <= item < self.end
-
-
 class Transform:
 
     def __init__(self, dest_start: int, source_start: int, range_len: int):
-        self.source_range = Range(source_start, source_start + range_len)
+        self.source_range = range(source_start, source_start + range_len)
         self.offset = dest_start - source_start
 
     def __str__(self):
-        return f"[{self.source_range.start}, {self.source_range.end}){self.offset:+}"
+        return f"[{self.source_range.start}, {self.source_range.stop}){self.offset:+}"
 
-    def __call__(self, source_num: int | Range):
-        if isinstance(source_num, Range):
+    def __call__(self, source_num: int | range):
+        if isinstance(source_num, range):
             # -1 + 1 to ensure that the end gets transformed if it == transform range end
-            return Range(self(source_num.start), self(source_num.end - 1) + 1)
+            return range(self(source_num.start), self(source_num.stop - 1) + 1)
         return source_num + (
             self.offset
             if source_num in self.source_range
@@ -45,12 +32,12 @@ class Puzzle5Solver(Solver):
     def process_seeds(self, seed_str):
         if self.puzzle_part == 1:
             return [
-                Range(int(start), int(start) + 1)
+                range(int(start), int(start) + 1)
                 for start in re.findall(r"\d+", seed_str)
             ]
         else:
             return [
-                Range(int(start), int(start) + int(range_len))
+                range(int(start), int(start) + int(range_len))
                 for start, range_len in re.findall(r"(\d+) (\d+)", seed_str)
             ]
 
@@ -76,7 +63,7 @@ class Puzzle5Solver(Solver):
         return seeds, maps
 
     @staticmethod
-    def update(seeds: list[Range], transforms: list[Transform]):
+    def update(seeds: list[range], transforms: list[Transform]):
         # transforms are sorted
         new_seeds = []
         while seeds:
@@ -85,14 +72,14 @@ class Puzzle5Solver(Solver):
             for transform in transforms:
                 if new_seed_start in transform.source_range:
                     # create new range for overlap of seed range and transform range
-                    if seed.end in transform.source_range:
-                        new_seed_end = seed.end
+                    if seed.stop in transform.source_range:
+                        new_seed_end = seed.stop
                     else:
-                        new_seed_end = transform.source_range.end
+                        new_seed_end = transform.source_range.stop
                         # capture remaining seed range to be handled by other transforms
-                        if remaining_seed := Range(transform.source_range.end, seed.end):
+                        if remaining_seed := range(transform.source_range.stop, seed.stop):
                             seeds.insert(0, remaining_seed)
-                    new_seeds.append(transform(Range(new_seed_start, new_seed_end)))
+                    new_seeds.append(transform(range(new_seed_start, new_seed_end)))
                     break
             else:
                 # gets mapped as is
